@@ -75,6 +75,13 @@ class Chef
           :cron => Chef::Provider::Cron,
         }
       },
+      :openbsd  => {
+        :default => {
+          :package => Chef::Provider::Package::Openbsd,
+          :service => Chef::Provider::Service::Simple,
+          :cron => Chef::Provider::Cron,
+        }
+      },
       :solaris  => {},
       :default  => {
         :file => Chef::Provider::File,
