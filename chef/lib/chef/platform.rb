@@ -106,6 +106,13 @@ class Chef
           :mdadm => Chef::Provider::Mdadm
         }
       },
+      :openbsd  => {
+        :default => {
+          :package => Chef::Provider::Package::Openbsd,
+          :service => Chef::Provider::Service::Simple,
+          :cron => Chef::Provider::Cron,
+        }
+      },
       :solaris  => {},
       :default  => {
         :file => Chef::Provider::File,
