@@ -84,36 +84,18 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
   end
 
   it "should return the version number when it is installed" do
-    @provider.should_receive(:popen4).with('pkg_info -E "zsh*"').and_yield(@pid, @stdin, ["zsh-4.3.6_7"], @stderr).and_return(@status)
+    @provider.should_receive(:popen4).with('pkg_info "zsh*"').and_yield(@pid, @stdin, ["zsh-4.3.6_7"], @stderr).and_return(@status)
     @provider.stub!(:package_name).and_return("zsh")
     @provider.current_installed_version.should == "4.3.6_7"
   end
 
   it "should return nil when the package is not installed" do
-    @provider.should_receive(:popen4).with('pkg_info -E "zsh*"').and_yield(@pid, @stdin, [], @stderr).and_return(@status)
+    @provider.should_receive(:popen4).with('pkg_info "zsh*"').and_yield(@pid, @stdin, [], @stderr).and_return(@status)
     @provider.stub!(:package_name).and_return("zsh")
     @provider.current_installed_version.should be_nil
   end
-  
-  it "should return the port path for a valid port name" do
-    @provider.should_receive(:popen4).with("whereis -s zsh").and_yield(@pid, @stdin, ["zsh: /usr/ports/shells/zsh"], @stderr).and_return(@status)
-    @provider.stub!(:port_name).and_return("zsh")
-    @provider.port_path.should == "/usr/ports/shells/zsh"
-  end
+end 
 
-  # Not happy with the form of these tests as they are far too closely tied to the implementation and so very fragile.
-  it "should return the ports candidate version when given a valid port path" do
-    @provider.should_receive(:port_path).and_return("/usr/ports/shells/zsh")
-    @provider.should_receive(:popen4).with("cd /usr/ports/shells/zsh; make -V PORTVERSION").and_yield(@pid, @stdin, @stdout, @stderr).and_return(@status)
-    @stdout.should_receive(:readline).and_return("4.3.6\n")
-    @provider.ports_candidate_version.should == "4.3.6"
-  end
-  
-  it "should figure out the package name" do
-    @provider.should_receive(:ports_makefile_variable_value).with("PKGNAME").and_return("zsh-4.3.6_7")
-    @provider.package_name.should == "zsh"
-  end
-end
 
 describe Chef::Provider::Package::Openbsd, "install_package" do
   before(:each) do
@@ -136,42 +118,12 @@ describe Chef::Provider::Package::Openbsd, "install_package" do
     @provider.stub!(:latest_link_name).and_return("zsh")
   end
 
-  it "should run pkg_add -r with the package name" do
+  it "should run pkg_add with the package name" do
     @provider.should_receive(:run_command).with({
-      :command => "pkg_add -r zsh",
+      :command => "pkg_add zsh",
     })
     @provider.install_package("zsh", "4.3.6_7")
   end
-
-  it "should run make install when installing from ports" do
-    @new_resource.stub!(:source).and_return("ports")
-    @provider.should_receive(:port_path).and_return("/usr/ports/shells/zsh")
-    @provider.should_receive(:run_command).with(:command => "make -DBATCH install", :cwd => "/usr/ports/shells/zsh")
-    @provider.install_package("zsh", "4.3.6_7")
-  end
-end
-
-describe Chef::Provider::Package::Openbsd, "port path" do
-  it "should figure out the port path from the package_name using whereis" do
-    @new_resource = mock("Chef::Resource::Package", :package_name => "zsh")
-    @provider = Chef::Provider::Package::Openbsd.new(mock("Chef::Node"), @new_resource)
-    @provider.should_receive(:popen4).with("whereis -s zsh").and_yield(nil, nil, ["zsh: /usr/ports/shells/zsh"], nil)
-    @provider.port_path.should == "/usr/ports/shells/zsh"
-  end
-  
-  it "should use the package_name as the port path when it starts with /" do
-    @new_resource = mock("Chef::Resource::Package", :package_name => "/usr/ports/www/wordpress")
-    @provider = Chef::Provider::Package::Openbsd.new(mock("Chef::Node"), @new_resource)
-    @provider.should_not_receive(:popen4)
-    @provider.port_path.should == "/usr/ports/www/wordpress"
-  end
-  
-  it "should use the package_name as a relative path from /usr/ports when it contains / but doesn't start with it" do
-    @new_resource = mock("Chef::Resource::Package", :package_name => "www/wordpress")
-    @provider = Chef::Provider::Package::Openbsd.new(mock("Chef::Node"), @new_resource)
-    @provider.should_not_receive(:popen4)
-    @provider.port_path.should == "/usr/ports/www/wordpress"
-  end 
 end
 
 describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in the name)" do
@@ -191,20 +143,13 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
     )
     @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
     @provider.current_resource = @current_resource
-    @provider.stub!(:port_path).and_return("/usr/ports/converters/ruby-iconv")
-    @provider.stub!(:package_name).and_return("ruby18-iconv")
-    @provider.stub!(:latest_link_name).and_return("ruby18-iconv")
+    @provider.stub!(:package_name).and_return("ruby-iconv")
+    @provider.stub!(:latest_link_name).and_return("ruby-iconv")
   end
 
   it "should run pkg_add -r with the package name" do
-    @provider.should_receive(:run_command).with(:command => "pkg_add -r ruby18-iconv")
-    @provider.install_package("ruby-iconv", "1.0")
-  end
-
-  it "should run make install when installing from ports" do
-    @new_resource.stub!(:source).and_return("ports")
-    @provider.should_receive(:run_command).with(:command => "make -DBATCH install", :cwd => "/usr/ports/converters/ruby-iconv")
-    @provider.install_package("ruby-iconv", "1.0")
+    @provider.should_receive(:run_command).with(:command => "pkg_add ruby-iconv")
+    @provider.install_package("ruby-iconv", "1.8.6")
   end
 end
 
