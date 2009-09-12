@@ -1,5 +1,5 @@
 #
-# Authors:: Mathieu Sauve-Frankel <msf@openbsd.org>
+# Authors:: Mathieu Sauve-Frankel <msf@kisoku.net>
 # Copyright:: Copyright (c) 2009 Mathieu Sauve-Frankel
 # License:: Apache License, Version 2.0
 #
