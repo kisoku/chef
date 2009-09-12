@@ -65,6 +65,83 @@ describe Chef::Provider::Package::Openbsd, "load_current_resource" do
   end
 end
 
+describe Chef::Provider::Package::Openbsd, "ambiguous pkg name, no flavor" do
+  before(:each) do
+    @new_resource = mock("Chef::Resource::Package", 
+      :null_object => true,
+      :name => "screen",
+      :package_name => "screen",
+      :source => "ftp://ftp.example.com/packages/",
+      :version => nil, 
+      :options => nil
+    )
+
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)    
+
+    @status = mock("Status", :exitstatus => 0)
+    @stdin = mock("STDIN", :null_object => true)
+    @stdout = mock("STDOUT", :null_object => true)
+    @stderr = mock("STDERR", :null_object => true)
+    @pid = mock("PID", :null_object => true)
+
+    @pkg_info_output = [
+      "Information for #{@new_resource.source}/screen-4.0.3p1.tgz",
+      "Information for #{@new_resource.source}/screen-4.0.3p1-shm.tgz",
+      "Information for #{@new_resource.source}/screen-4.0.3p1-static.tgz",
+    ]   
+  end
+  
+  it "should default to using the basic package" do
+    @provider.should_receive(:popen4).
+      with('pkg_info screen', 
+        :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
+      and_yield(@pid, @stdin, @pkg_info_output, @stderr).
+      and_return(@status)
+    @provider.stub!(:package_name).and_return("screen")
+    @provider.stub!(:options)
+    @provider.candidate_version.should eql("4.0.3p1")
+    @provider.options.should be_nil
+  end
+
+end
+
+describe Chef::Provider::Package::Openbsd, "ambiguous pkg name with flavor" do
+  before(:each) do
+    @new_resource = mock("Chef::Resource::Package", 
+      :null_object => true,
+      :name => "screen",
+      :package_name => "screen",
+      :source => "ftp://ftp.example.com/packages/",
+      :version => nil, 
+      :options => '-static'
+    )
+
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)    
+
+    @status = mock("Status", :exitstatus => 0)
+    @stdin = mock("STDIN", :null_object => true)
+    @stdout = mock("STDOUT", :null_object => true)
+    @stderr = mock("STDERR", :null_object => true)
+    @pid = mock("PID", :null_object => true)
+
+    @pkg_info_output = [
+      "Information for #{@new_resource.source}/screen-4.0.3p1.tgz",
+      "Information for #{@new_resource.source}/screen-4.0.3p1-shm.tgz",
+      "Information for #{@new_resource.source}/screen-4.0.3p1-static.tgz",
+    ]   
+  end
+
+  it "should use a flavor when the flavor option is specified" do
+    @provider.should_receive(:popen4).
+      with('pkg_info screen', 
+        :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
+      and_yield(@pid, @stdin, @pkg_info_output, @stderr).
+      and_return(@status)
+    @provider.stub!(:package_name).and_return("screen")
+    @provider.candidate_version.should eql("4.0.3p1-static")
+  end
+end
+
 describe Chef::Provider::Package::Openbsd, "system call wrappers" do
   before(:each) do
     @new_resource = mock("Chef::Resource::Package", 
@@ -131,7 +208,7 @@ describe Chef::Provider::Package::Openbsd, "install_package" do
 
   it "should run pkg_add with the package name" do
     @provider.should_receive(:run_command).with({
-      :command => "pkg_add zsh",
+      :command => "pkg_add zsh-4.3.6_7",
       :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
     })
     @provider.install_package("zsh", "4.3.6_7")
@@ -161,9 +238,9 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
     @provider.stub!(:latest_link_name).and_return("ruby-iconv")
   end
 
-  it "should run pkg_add -r with the package name" do
+  it "should run pkg_add with the package name" do
     @provider.should_receive(:run_command).with({
-      :command => "pkg_add ruby-iconv",
+      :command => "pkg_add ruby-iconv-1.8.6",
       :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
     })
     @provider.install_package("ruby-iconv", "1.8.6")
