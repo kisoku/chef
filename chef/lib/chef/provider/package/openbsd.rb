@@ -25,8 +25,8 @@ class Chef
     class Package
       class Openbsd < Chef::Provider::Package
         def current_installed_version
-          command = "pkg_info #{@current_resource.package_name}"
-          env = { 'PKG_PATH' => "#{@current_resource.source}" }
+          command = "pkg_info #{@new_resource.package_name}"
+          env = { 'PKG_PATH' => "#{@new_resource.source}" }
           status = popen4(command, :environment => env) do |pid, stdin, stdout, stderr|
             stdout.each do |line|
               case line
@@ -89,9 +89,15 @@ class Chef
         end
 
         def remove_package(name, version)
-          run_command(
-            :command => "pkg_delete #{@current_resource.package_name}"
-          )
+          if version
+            run_command(
+              :command => "pkg_delete #{@new_resource.package_name}-#{version}"
+            )
+          else
+            run_command(
+              :command => "pkg_delete #{@new_resource.package_name}"
+            )
+          end
         end
 
         def upgrade_package(name, version)
