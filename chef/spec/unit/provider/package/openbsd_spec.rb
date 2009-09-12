@@ -37,7 +37,7 @@ describe Chef::Provider::Package::Openbsd, "load_current_resource" do
     @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)    
     Chef::Resource::Package.stub!(:new).and_return(@current_resource)
 
-    @provider.should_receive(:candidate_version).and_return("4.0")
+    @provider.stub!(:candidate_version).and_return("4.0")
   end
 
   it "should create a current resource with the name of the new_resource" do
@@ -70,6 +70,7 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
     @new_resource = mock("Chef::Resource::Package", 
       :null_object => true,
       :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "zsh",
       :version => nil
     )
@@ -84,13 +85,21 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
   end
 
   it "should return the version number when it is installed" do
-    @provider.should_receive(:popen4).with('pkg_info "zsh*"').and_yield(@pid, @stdin, ["zsh-4.3.6_7"], @stderr).and_return(@status)
+    @provider.should_receive(:popen4).
+      with('pkg_info zsh', 
+        :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
+      and_yield(@pid, @stdin, ["Information for inst:zsh-4.3.6_7"], @stderr).
+      and_return(@status)
     @provider.stub!(:package_name).and_return("zsh")
     @provider.current_installed_version.should == "4.3.6_7"
   end
 
   it "should return nil when the package is not installed" do
-    @provider.should_receive(:popen4).with('pkg_info "zsh*"').and_yield(@pid, @stdin, [], @stderr).and_return(@status)
+    @provider.should_receive(:popen4).
+      with('pkg_info zsh', 
+        :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
+      and_yield(@pid, @stdin, [], @stderr).
+      and_return(@status)
     @provider.stub!(:package_name).and_return("zsh")
     @provider.current_installed_version.should be_nil
   end
@@ -103,12 +112,14 @@ describe Chef::Provider::Package::Openbsd, "install_package" do
     @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "zsh",
       :version => nil
     )
     @current_resource = mock("Chef::Resource::Package", 
       :null_object => true,
       :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "zsh",
       :version => nil
     )
@@ -121,6 +132,7 @@ describe Chef::Provider::Package::Openbsd, "install_package" do
   it "should run pkg_add with the package name" do
     @provider.should_receive(:run_command).with({
       :command => "pkg_add zsh",
+      :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
     })
     @provider.install_package("zsh", "4.3.6_7")
   end
@@ -132,12 +144,14 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
     @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "ruby-iconv",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "ruby-iconv",
       :version => nil
     )
     @current_resource = mock("Chef::Resource::Package", 
       :null_object => true,
       :name => "ruby-iconv",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "ruby-iconv",
       :version => nil
     )
@@ -148,7 +162,10 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
   end
 
   it "should run pkg_add -r with the package name" do
-    @provider.should_receive(:run_command).with(:command => "pkg_add ruby-iconv")
+    @provider.should_receive(:run_command).with({
+      :command => "pkg_add ruby-iconv",
+      :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
+    })
     @provider.install_package("ruby-iconv", "1.8.6")
   end
 end
@@ -159,12 +176,14 @@ describe Chef::Provider::Package::Openbsd, "remove_package" do
     @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "zsh",
       :version => "4.3.6_7"
     )
     @current_resource = mock("Chef::Resource::Package", 
       :null_object => true,
       :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "zsh",
       :version => "4.3.6_7"
     )
