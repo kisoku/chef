@@ -50,16 +50,26 @@ class Chef
           case @new_resource.source
           when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)?)/
             candidates = []
-            command = "pkg_info #{@current_resource.package_name}"
-            env = { 'PKG_PATH' => "#{@current_resource.source}" }
+            command = "pkg_info #{@new_resource.package_name}"
+            env = { 'PKG_PATH' => "#{@new_resource.source}" }
             status = popen4(command, :environment => env) do |pid, stdin, stdout, stderr|
               stdout.each do |line|
                 case line 
-                when /^Information for #{@current_resource.package_name}-([\w\d.-]+).tgz/
+                when /^Information for #{@new_resource.source}\/#{@new_resource.package_name}-([\w\d.-]+).tgz/
                   candidates << $1
                 end
               end
             end
+          end
+          # XXX I hate this, can it be improved
+          if candidates.length > 1 
+            if expand_options(@new_resource.options).empty?
+              return candidates.sort.shift
+            else
+              return candidates.grep(/#{@new_resource.options}/).to_s
+            end
+          else
+            return candidates.shift.to_s
           end
         end
 
@@ -79,11 +89,22 @@ class Chef
           unless @current_resource.version
             case @new_resource.source
             when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)?)/
-              run_command(
-                :command => "pkg_add #{@new_resource.package_name}",
-                :environment => { "PKG_PATH" => @new_resource.source }
-              )
-              Chef::Log.info("Installed package #{@new_resource.package_name} from: #{@new_resource.source}")
+              if version
+                run_command(
+                  :command => "pkg_add #{@new_resource.package_name}-#{version}",
+                  :environment => { "PKG_PATH" => @new_resource.source }
+                )
+                Chef::Log.info("Installed package #{@new_resource.package_name} from: #{@new_resource.source}")
+              else
+                run_command(
+                  :command => "pkg_add #{@new_resource.package_name}",
+                  :environment => { "PKG_PATH" => @new_resource.source }
+                )
+                Chef::Log.info("Installed package #{@new_resource.package_name} from: #{@new_resource.source}")
+              end
+               
+            else
+              Chef::Log.warn("No source specified for package #{@new_resource.package_name}")
             end
           end
         end
