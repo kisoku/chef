@@ -26,8 +26,7 @@ class Chef
       class Openbsd < Chef::Provider::Package
         def current_installed_version
           command = "pkg_info #{@new_resource.package_name}"
-          env = { 'PKG_PATH' => "#{@new_resource.source}" }
-          status = popen4(command, :environment => env) do |pid, stdin, stdout, stderr|
+          status = popen4(command) do |pid, stdin, stdout, stderr|
             stdout.each do |line|
               case line
               when /^Information for inst:#{package_name}-(.+)/
