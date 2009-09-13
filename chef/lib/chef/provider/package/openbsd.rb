@@ -56,11 +56,14 @@ class Chef
                 case line 
                 when /^Information for #{@new_resource.source}\/#{@new_resource.package_name}-([\w\d.-]+).tgz/
                   candidates << $1
+                when /^No packages available in the PKG_PATH/
+                  raise Chef::Exceptions::Package, "#{command} failed - no packages found in $PKG_PATH, check source"
                 end
               end
             end
+          else
+            raise Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}"
           end
-          # XXX I hate this, can it be improved
           if candidates.length > 1 
             if expand_options(@new_resource.options).empty?
               return candidates.sort.shift
@@ -101,9 +104,10 @@ class Chef
                 )
                 Chef::Log.info("Installed package #{@new_resource.package_name} from: #{@new_resource.source}")
               end
-               
+            when /^No packages available in the PKG_PATH/
+              raise Chef::Exceptions::Package, "#{command} failed - no packages found in $PKG_PATH, check source"
             else
-              Chef::Log.warn("No source specified for package #{@new_resource.package_name}")
+              raise Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}"
             end
           end
         end
