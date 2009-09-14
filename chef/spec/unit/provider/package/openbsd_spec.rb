@@ -195,8 +195,7 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
 
   it "should return the version number when it is installed" do
     @provider.should_receive(:popen4).
-      with('pkg_info zsh', 
-        :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
+      with('pkg_info zsh').
       and_yield(@pid, @stdin, ["Information for inst:zsh-4.3.6_7"], @stderr).
       and_return(@status)
     @provider.stub!(:package_name).and_return("zsh")
@@ -205,8 +204,7 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
 
   it "should return nil when the package is not installed" do
     @provider.should_receive(:popen4).
-      with('pkg_info zsh', 
-        :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
+      with('pkg_info zsh').
       and_yield(@pid, @stdin, [], @stderr).
       and_return(@status)
     @provider.stub!(:package_name).and_return("zsh")
