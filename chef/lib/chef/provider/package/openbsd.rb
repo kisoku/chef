@@ -138,27 +138,30 @@ class Chef
         end
 
         def upgrade_package(name, version)
-          if @current_resource.version
-            if @new_resource.source.nil?
-              raise Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}"
-            else
-              case @new_resource.source
-              when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)+)/
-                run_command(
-                  :command => "pkg_add -u -F update -F updatedepends #{@new_resource.package_name}",
-                  :environment => {
-                    "PKG_PATH"     => "#{@new_resource.package_name}"
-                  }
-                )
-              when /^No packages available in the PKG_PATH/
-                raise Chef::Exceptions::Package, "#{command} failed - no packages found in $PKG_PATH, check source"
-
+           current_version = @current_resource.version
+           if current_version.nil? or current_version.empty?
+             install_package(name,version)
+           else
+            if current_version != version
+              if @new_resource.source.nil?
+                raise Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}"
               else
-                raise Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}"
+                case @new_resource.source
+                when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)+)/
+                  run_command(
+                    :command => "pkg_add -u -F update -F updatedepends #{@new_resource.package_name}-#{version}",
+                    :environment => {
+                      "PKG_PATH"     => "#{@new_resource.source}"
+                    }
+                  )
+                when /^No packages available in the PKG_PATH/
+                  raise Chef::Exceptions::Package, "#{command} failed - no packages found in $PKG_PATH, check source"
+
+                else
+                  raise Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}"
+                end
               end
             end
-          else
-            install_package(name,version)
           end
         end  
       end
