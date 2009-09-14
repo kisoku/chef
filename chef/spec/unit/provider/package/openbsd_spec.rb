@@ -293,12 +293,12 @@ describe Chef::Provider::Package::Openbsd, "invalid_source" do
 
   it "should throw an exception in install_package" do
     @provider.stub!(:package_name).and_return("zsh")
-    lambda { @provider.install_package("zsh", "4.3.6_7" }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
+    lambda { @provider.install_package("zsh", "4.3.6_7") }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
   end
 
   it "should throw an exception in upgrade_package" do
     @provider.stub!(:package_name).and_return("zsh")
-    lambda { @provider.upgrade_package("zsh", "4.3.6_7" }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
+    lambda { @provider.upgrade_package("zsh", "4.3.6_7") }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
   end
 end
 
