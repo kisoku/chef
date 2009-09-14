@@ -125,10 +125,24 @@ class Chef
         end
 
         def upgrade_package(name, version)
-          run_command(
-            :command => "pkg_add -u -F depends -F updatedepends #{@current_resource.package_name}",
-            :environment => { "FORCE_UPDATE" => "YES" }
-          )
+          if @current_resource.version
+            case @new_resource.source
+            when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)?)/
+              run_command(
+                :command => "pkg_add -u -F update -F updatedepends #{@new_resource.package_name}",
+                :environment => { 
+                  "PKG_PATH"     => "#{@new_resource.package_name}"
+                }
+              )
+            when /^No packages available in the PKG_PATH/
+              raise Chef::Exceptions::Package, "#{command} failed - no packages found in $PKG_PATH, check source"
+
+            else
+              raise Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}"
+            end
+          else
+            install_package(name,version)
+          end
         end  
       end
     end
