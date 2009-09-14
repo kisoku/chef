@@ -261,6 +261,7 @@ describe Chef::Provider::Package::Openbsd, "invalid source" do
     lambda { @provider.candidate_version }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
   end
 end
+
 describe Chef::Provider::Package::Openbsd, "install_package" do
   before(:each) do
     @node = mock("Chef::Node", :null_object => true)
@@ -333,7 +334,7 @@ describe Chef::Provider::Package::Openbsd, "remove_package" do
       :package_name => "zsh",
       :version => "4.3.6_7"
     )
-    @current_resource = mock("Chef::Resource::Package", 
+    @current_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "zsh",
       :source => 'ftp://ftp.example.com/packages/',
