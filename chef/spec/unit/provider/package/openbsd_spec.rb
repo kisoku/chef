@@ -233,7 +233,6 @@ describe Chef::Provider::Package::Openbsd, "install_package" do
     @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
     @provider.current_resource = @current_resource
     @provider.stub!(:package_name).and_return("zsh")
-    @provider.stub!(:latest_link_name).and_return("zsh")
   end
 
   it "should run pkg_add with the package name" do
@@ -265,7 +264,6 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
     @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
     @provider.current_resource = @current_resource
     @provider.stub!(:package_name).and_return("ruby-iconv")
-    @provider.stub!(:latest_link_name).and_return("ruby-iconv")
   end
 
   it "should run pkg_add with the package name" do
