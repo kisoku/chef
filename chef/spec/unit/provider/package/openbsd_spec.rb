@@ -364,6 +364,68 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
   end
 end
 
+describe Chef::Provider::Package::Openbsd, "upgrade_fallthrough" do
+  before(:each) do
+    @node = mock("Chef::Node", :null_object => true)
+    @new_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
+      :package_name => "zsh",
+      :version => nil
+    )
+    @current_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
+      :package_name => "zsh",
+      :version => nil
+    )
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
+    @provider.current_resource = @current_resource
+    @provider.stub!(:package_name).and_return("zsh")
+  end
+
+  it "should call install_package if the package is not currently installed" do
+    @provider.should_receive(:run_command).with({
+      :command => "pkg_add zsh-4.3.6_7",
+      :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
+    })
+    @provider.upgrade_package("zsh", "4.3.6_7")
+  end
+end
+
+describe Chef::Provider::Package::Openbsd, "upgrade_package" do
+  before(:each) do
+    @node = mock("Chef::Node", :null_object => true)
+    @new_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
+      :package_name => "zsh",
+      :version => "4.3.8"
+    )
+    @current_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
+      :package_name => "zsh",
+      :version => "4.3.6_7"
+    )
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
+    @provider.current_resource = @current_resource
+    @provider.stub!(:package_name).and_return("zsh")
+  end
+
+  it "should upgrade the package using pkg_add" do
+    @provider.should_receive(:run_command).with({
+      :command => "pkg_add -u -F update -F updatedepends zsh-4.3.8",
+      :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
+    })
+    @provider.upgrade_package("zsh", "4.3.8")
+  end
+end
+
 describe Chef::Provider::Package::Openbsd, "remove_package" do
   before(:each) do
     @node = mock("Chef::Node", :null_object => true)
