@@ -212,12 +212,20 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
   end
 end
 
-describe Chef::Provider::Package::Openbsd, "empty source" do
+describe Chef::Provider::Package::Openbsd, "no_source_specified" do
   before(:each) do
     @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "zsh",
       :source => nil,
+      :package_name => "zsh",
+      :version => nil
+    )
+
+    @current_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
       :package_name => "zsh",
       :version => nil
     )
@@ -229,15 +237,26 @@ describe Chef::Provider::Package::Openbsd, "empty source" do
     @stdout = mock("STDOUT", :null_object => true)
     @stderr = mock("STDERR", :null_object => true)
     @pid = mock("PID", :null_object => true)
+
+    @provider.current_resource = @current_resource
+    @provider.stub!(:package_name).and_return("zsh")
   end
 
-  it "should throw an exception when no source is specified" do
+  it "should throw an exception in candidate_version" do
     @provider.stub!(:package_name).and_return("zsh")
     lambda { @provider.candidate_version }.should raise_error(Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}")
   end
+
+  it "should throw an exception in install_package" do
+    lambda { @provider.install_package("zsh", "4.3.6_7") }.should raise_error(Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}")
+  end
+
+  it "should throw an exception in upgrade_package" do
+    lambda { @provider.upgrade_package("zsh", "4.3.6_7") }.should raise_error(Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}")
+  end
 end
 
-describe Chef::Provider::Package::Openbsd, "invalid source" do
+describe Chef::Provider::Package::Openbsd, "invalid_source" do
   before(:each) do
     @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
@@ -254,11 +273,32 @@ describe Chef::Provider::Package::Openbsd, "invalid source" do
     @stdout = mock("STDOUT", :null_object => true)
     @stderr = mock("STDERR", :null_object => true)
     @pid = mock("PID", :null_object => true)
+
+    @current_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => 'ftp://ftp.example.com/packages/',
+      :package_name => "zsh",
+      :version => nil
+    )
+
+    @provider.current_resource = @current_resource
+    @provider.stub!(:package_name).and_return("zsh")
   end
 
-  it "should throw an exception when no source is specified" do
+  it "should throw an exception in candidate_version" do
     @provider.stub!(:package_name).and_return("zsh")
     lambda { @provider.candidate_version }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
+  end
+
+  it "should throw an exception in install_package" do
+    @provider.stub!(:package_name).and_return("zsh")
+    lambda { @provider.install_package("zsh", "4.3.6_7" }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
+  end
+
+  it "should throw an exception in upgrade_package" do
+    @provider.stub!(:package_name).and_return("zsh")
+    lambda { @provider.upgrade_package("zsh", "4.3.6_7" }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
   end
 end
 
