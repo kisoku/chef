@@ -210,9 +210,57 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
     @provider.stub!(:package_name).and_return("zsh")
     @provider.current_installed_version.should be_nil
   end
-end 
+end
 
+describe Chef::Provider::Package::Openbsd, "empty source" do
+  before(:each) do
+    @new_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => nil,
+      :package_name => "zsh",
+      :version => nil
+    )
 
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
+
+    @status = mock("Status", :exitstatus => 0)
+    @stdin = mock("STDIN", :null_object => true)
+    @stdout = mock("STDOUT", :null_object => true)
+    @stderr = mock("STDERR", :null_object => true)
+    @pid = mock("PID", :null_object => true)
+  end
+
+  it "should throw an exception when no source is specified" do
+    @provider.stub!(:package_name).and_return("zsh")
+    lambda { @provider.candidate_version }.should raise_error(Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}")
+  end
+end
+
+describe Chef::Provider::Package::Openbsd, "invalid source" do
+  before(:each) do
+    @new_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "zsh",
+      :source => "ackthpt",
+      :package_name => "zsh",
+      :version => nil
+    )
+
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
+
+    @status = mock("Status", :exitstatus => 0)
+    @stdin = mock("STDIN", :null_object => true)
+    @stdout = mock("STDOUT", :null_object => true)
+    @stderr = mock("STDERR", :null_object => true)
+    @pid = mock("PID", :null_object => true)
+  end
+
+  it "should throw an exception when no source is specified" do
+    @provider.stub!(:package_name).and_return("zsh")
+    lambda { @provider.candidate_version }.should raise_error(Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}")
+  end
+end
 describe Chef::Provider::Package::Openbsd, "install_package" do
   before(:each) do
     @node = mock("Chef::Node", :null_object => true)
