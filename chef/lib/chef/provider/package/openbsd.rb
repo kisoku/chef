@@ -52,7 +52,7 @@ class Chef
             raise Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}"
           else
             case @new_resource.source
-            when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)+)/
+            when /((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+)(?::)?/
               candidates = []
               command = "pkg_info #{@new_resource.package_name}"
               env = { 'PKG_PATH' => "#{@new_resource.source}" }
@@ -102,7 +102,7 @@ class Chef
               raise Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}"
             else
               case @new_resource.source
-              when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)+)/
+              when /((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+)(?::)?/
                 if version
                   run_command(
                     :command => "pkg_add #{@new_resource.package_name}-#{version}",
@@ -147,7 +147,7 @@ class Chef
                 raise Chef::Exceptions::Package, "no source specified for package: #{@new_resource.package_name}"
               else
                 case @new_resource.source
-                when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)+)/
+                when /((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+)(?::)?/
                   run_command(
                     :command => "pkg_add -u -F update -F updatedepends #{@new_resource.package_name}-#{version}",
                     :environment => {
