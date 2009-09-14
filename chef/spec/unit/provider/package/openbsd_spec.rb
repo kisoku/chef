@@ -65,6 +65,38 @@ describe Chef::Provider::Package::Openbsd, "load_current_resource" do
   end
 end
 
+describe Chef::Provider::Package::Openbsd, "package path has no packages" do
+  before(:each) do
+    @new_resource = mock("Chef::Resource::Package",
+      :null_object => true,
+      :name => "screen",
+      :package_name => "screen",
+      :source => "ftp://ftp.example.com/packages/",
+      :version => nil,
+      :options => '-static'
+    )
+
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
+
+    @status = mock("Status", :exitstatus => 0)
+    @stdin = mock("STDIN", :null_object => true)
+    @stdout = mock("STDOUT", :null_object => true)
+    @stderr = mock("STDERR", :null_object => true)
+    @pid = mock("PID", :null_object => true)
+
+  end
+
+  it "should use a flavor when the flavor option is specified" do
+    @provider.should_receive(:popen4).
+      with('pkg_info screen',
+        :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
+      and_yield(@pid, @stdin, ["No packages available in the PKG_PATH"], @stderr).
+      and_return(@status)
+    @provider.stub!(:package_name).and_return("screen")
+    lambda { @provider.candidate_version}.should raise_error(Chef::Exceptions::Package, "pkg_info screen failed - no packages found in $PKG_PATH, check source")
+  end
+end
+
 describe Chef::Provider::Package::Openbsd, "ambiguous pkg name, no flavor" do
   before(:each) do
     @new_resource = mock("Chef::Resource::Package", 
