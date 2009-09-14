@@ -63,6 +63,9 @@ class Chef
                 end
               end
             end
+            unless status.exitstatus == 0 || status.exitstatus == 1
+              raise Chef::Exceptions::Package, "#{command} failed - #{status.inspect}!"
+            end
           else
             raise Chef::Exceptions::Package, "invalid source specified for package: #{@new_resource.package_name}"
           end
