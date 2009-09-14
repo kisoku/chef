@@ -41,11 +41,13 @@ class Chef
         end
 
         def candidate_version
-          # here we use pkg_info to determine the available package version
+          # We use pkg_info to determine the available package version.
           # pkg_info may return more than one result and so we need to
-          # examine the results in order to determine the best match
-          # TODO: add support for packages that have FLAVOR, see OpenBSD's
-          # bsd.port.mk(5) for more details about FLAVOR
+          # examine the results in order to determine the best match.
+          # When no option is set on the package resource and multiple
+          # FLAVORs of a package have been found we default to using
+          # the unflavored package, otherwise try using the string stored
+          # in option to match 
           case @new_resource.source
           when /(((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+(?::)?)?)/
             candidates = []
