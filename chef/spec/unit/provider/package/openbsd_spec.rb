@@ -6,9 +6,9 @@
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,20 +21,20 @@ require File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "..", "sp
 describe Chef::Provider::Package::Openbsd, "load_current_resource" do
   before(:each) do
     @node = mock("Chef::Node", :null_object => true)
-    @new_resource = mock("Chef::Resource::Package", 
+    @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "bash",
       :package_name => "bash",
       :version => nil
     )
-    @current_resource = mock("Chef::Resource::Package", 
+    @current_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "bash",
       :package_name => "bash",
       :version => nil
     )
 
-    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)    
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
     Chef::Resource::Package.stub!(:new).and_return(@current_resource)
 
     @provider.stub!(:candidate_version).and_return("4.0")
@@ -99,16 +99,16 @@ end
 
 describe Chef::Provider::Package::Openbsd, "ambiguous pkg name, no flavor" do
   before(:each) do
-    @new_resource = mock("Chef::Resource::Package", 
+    @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "screen",
       :package_name => "screen",
       :source => "ftp://ftp.example.com/packages/",
-      :version => nil, 
+      :version => nil,
       :options => nil
     )
 
-    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)    
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
 
     @status = mock("Status", :exitstatus => 0)
     @stdin = mock("STDIN", :null_object => true)
@@ -120,12 +120,12 @@ describe Chef::Provider::Package::Openbsd, "ambiguous pkg name, no flavor" do
       "Information for #{@new_resource.source}/screen-4.0.3p1.tgz",
       "Information for #{@new_resource.source}/screen-4.0.3p1-shm.tgz",
       "Information for #{@new_resource.source}/screen-4.0.3p1-static.tgz",
-    ]   
+    ]
   end
-  
+
   it "should default to using the basic package" do
     @provider.should_receive(:popen4).
-      with('pkg_info screen', 
+      with('pkg_info screen',
         :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
       and_yield(@pid, @stdin, @pkg_info_output, @stderr).
       and_return(@status)
@@ -134,21 +134,21 @@ describe Chef::Provider::Package::Openbsd, "ambiguous pkg name, no flavor" do
     @provider.candidate_version.should eql("4.0.3p1")
     @provider.options.should be_nil
   end
-
 end
+
 
 describe Chef::Provider::Package::Openbsd, "ambiguous pkg name with flavor" do
   before(:each) do
-    @new_resource = mock("Chef::Resource::Package", 
+    @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "screen",
       :package_name => "screen",
       :source => "ftp://ftp.example.com/packages/",
-      :version => nil, 
+      :version => nil,
       :options => '-static'
     )
 
-    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)    
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
 
     @status = mock("Status", :exitstatus => 0)
     @stdin = mock("STDIN", :null_object => true)
@@ -160,12 +160,12 @@ describe Chef::Provider::Package::Openbsd, "ambiguous pkg name with flavor" do
       "Information for #{@new_resource.source}/screen-4.0.3p1.tgz",
       "Information for #{@new_resource.source}/screen-4.0.3p1-shm.tgz",
       "Information for #{@new_resource.source}/screen-4.0.3p1-static.tgz",
-    ]   
+    ]
   end
 
   it "should use a flavor when the flavor option is specified" do
     @provider.should_receive(:popen4).
-      with('pkg_info screen', 
+      with('pkg_info screen',
         :environment => { 'PKG_PATH' => "#{@new_resource.source}"}).
       and_yield(@pid, @stdin, @pkg_info_output, @stderr).
       and_return(@status)
@@ -176,7 +176,7 @@ end
 
 describe Chef::Provider::Package::Openbsd, "system call wrappers" do
   before(:each) do
-    @new_resource = mock("Chef::Resource::Package", 
+    @new_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "zsh",
       :source => 'ftp://ftp.example.com/packages/',
@@ -184,7 +184,7 @@ describe Chef::Provider::Package::Openbsd, "system call wrappers" do
       :version => nil
     )
 
-    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)    
+    @provider = Chef::Provider::Package::Openbsd.new(@node, @new_resource)
 
     @status = mock("Status", :exitstatus => 0)
     @stdin = mock("STDIN", :null_object => true)
@@ -223,7 +223,7 @@ describe Chef::Provider::Package::Openbsd, "install_package" do
       :package_name => "zsh",
       :version => nil
     )
-    @current_resource = mock("Chef::Resource::Package", 
+    @current_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "zsh",
       :source => 'ftp://ftp.example.com/packages/',
@@ -255,7 +255,7 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
       :package_name => "ruby-iconv",
       :version => nil
     )
-    @current_resource = mock("Chef::Resource::Package", 
+    @current_resource = mock("Chef::Resource::Package",
       :null_object => true,
       :name => "ruby-iconv",
       :source => 'ftp://ftp.example.com/packages/',
