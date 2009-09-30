@@ -123,6 +123,12 @@ describe Chef::Resource::Service do
       lambda { @resource.send(attrib, "poop") }.should raise_error(ArgumentError)
     end
 
+    it "should allow you to set options this resource supports as a hash" do
+      options_hash = { :enable_variable => "ntpd_conf", :enable_args => "-s" }
+      @resource.options(options_hash)
+      @resource.options.should == options_hash
+    end
+
     it "should default all the feature support to false" do
       support_hash = { :status => false, :restart => false, :reload=> false }
       @resource.supports.should == support_hash
@@ -134,6 +140,7 @@ describe Chef::Resource::Service do
       @resource.supports(support_array)
       @resource.supports.should == support_hash
     end
+
 
     it "should allow you to set what features this resource supports as a hash" do
       support_hash = { :status => true, :restart => true, :reload => false }
