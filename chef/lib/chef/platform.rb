@@ -108,8 +108,9 @@ class Chef
       },
       :openbsd  => {
         :default => {
+          :group => Chef::Provider::Group::Usermod,
           :package => Chef::Provider::Package::Openbsd,
-          :service => Chef::Provider::Service::Simple,
+          :service => Chef::Provider::Service::Openbsd,
           :cron => Chef::Provider::Cron,
         }
       },
