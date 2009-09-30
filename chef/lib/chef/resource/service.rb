@@ -37,6 +37,7 @@ class Chef
         @action = "nothing"
         @supports = { :restart => false, :reload => false, :status => false }
         @allowed_actions.push(:enable, :disable, :start, :stop, :restart, :reload)
+        @options = nil
       end
       
       def service_name(arg=nil)
@@ -118,6 +119,14 @@ class Chef
         )
       end
 
+      def options(args=nil)
+        set_or_return(
+          :options,
+          args,
+          :kind_of => Hash
+        )
+      end
+
       def supports(args={})
         if args.is_a? Array
           args.each { |arg| @supports[arg] = true }
@@ -128,7 +137,6 @@ class Chef
         end
       end
 
-  
     end
   end
 end
