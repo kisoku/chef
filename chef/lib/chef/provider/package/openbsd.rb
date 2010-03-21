@@ -104,13 +104,13 @@ class Chef
               case @new_resource.source
               when /((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+)(?::)?/
                 if version
-                  run_command(
+                  run_command_with_systems_locale(
                     :command => "pkg_add #{@new_resource.package_name}-#{version}",
                     :environment => { "PKG_PATH" => @new_resource.source }
                   )
                   Chef::Log.info("Installed package #{@new_resource.package_name} from: #{@new_resource.source}")
                 else
-                  run_command(
+                  run_command_with_systems_locale(
                     :command => "pkg_add #{@new_resource.package_name}",
                     :environment => { "PKG_PATH" => @new_resource.source }
                   )
@@ -127,11 +127,11 @@ class Chef
 
         def remove_package(name, version)
           if version
-            run_command(
+            run_command_with_systems_locale(
               :command => "pkg_delete #{@new_resource.package_name}-#{version}"
             )
           else
-            run_command(
+            run_command_with_systems_locale(
               :command => "pkg_delete #{@new_resource.package_name}"
             )
           end
@@ -148,7 +148,7 @@ class Chef
               else
                 case @new_resource.source
                 when /((?:(?:https?|ftp|scp):\/\/|[\/.]+)[\w.\/]+)(?::)?/
-                  run_command(
+                  run_command_with_systems_locale(
                     :command => "pkg_add -u -F update -F updatedepends #{@new_resource.package_name}-#{version}",
                     :environment => {
                       "PKG_PATH"     => "#{@new_resource.source}"

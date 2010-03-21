@@ -325,7 +325,7 @@ describe Chef::Provider::Package::Openbsd, "install_package" do
   end
 
   it "should run pkg_add with the package name" do
-    @provider.should_receive(:run_command).with({
+    @provider.should_receive(:run_command_with_systems_locale).with({
       :command => "pkg_add zsh-4.3.6_7",
       :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
     })
@@ -356,7 +356,7 @@ describe Chef::Provider::Package::Openbsd, "ruby-iconv (package with a dash in t
   end
 
   it "should run pkg_add with the package name" do
-    @provider.should_receive(:run_command).with({
+    @provider.should_receive(:run_command_with_systems_locale).with({
       :command => "pkg_add ruby-iconv-1.8.6",
       :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
     })
@@ -387,7 +387,7 @@ describe Chef::Provider::Package::Openbsd, "upgrade_fallthrough" do
   end
 
   it "should call install_package if the package is not currently installed" do
-    @provider.should_receive(:run_command).with({
+    @provider.should_receive(:run_command_with_systems_locale).with({
       :command => "pkg_add zsh-4.3.6_7",
       :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
     })
@@ -418,7 +418,7 @@ describe Chef::Provider::Package::Openbsd, "upgrade_package" do
   end
 
   it "should upgrade the package using pkg_add" do
-    @provider.should_receive(:run_command).with({
+    @provider.should_receive(:run_command_with_systems_locale).with({
       :command => "pkg_add -u -F update -F updatedepends zsh-4.3.8",
       :environment => { 'PKG_PATH' => "#{@new_resource.source}"}
     })
@@ -449,7 +449,7 @@ describe Chef::Provider::Package::Openbsd, "remove_package" do
   end
 
   it "should run pkg_delete with the package name and version" do
-    @provider.should_receive(:run_command).with({
+    @provider.should_receive(:run_command_with_systems_locale).with({
       :command => "pkg_delete zsh-4.3.6_7"
     })
     @provider.remove_package("zsh", "4.3.6_7")
